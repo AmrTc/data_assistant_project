@@ -4,9 +4,53 @@ Configuration utilities for the Data Assistant project.
 
 import os
 from pathlib import Path
+import sys
 
-# Konsistente Imports - Immer vollständige Pfade
-from new_data_assistant_project.src.utils.secrets_path_utils import SecretsPathUtils
+# Robust import handling for different environments
+def robust_import_modules():
+    """Import required modules with multiple fallback strategies."""
+    
+    # Strategy 1: Try absolute imports (local development)
+    try:
+        from new_data_assistant_project.src.utils.secrets_path_utils import SecretsPathUtils
+        print("✅ My Config: Absolute imports successful")
+        return SecretsPathUtils
+    except ImportError as e:
+        print(f"❌ Absolute imports failed: {e}")
+    
+    # Strategy 2: Try direct imports (Docker/production - new structure)
+    try:
+        from src.utils.secrets_path_utils import SecretsPathUtils
+        print("✅ My Config: Direct imports successful")
+        return SecretsPathUtils
+    except ImportError as e:
+        print(f"❌ Direct imports failed: {e}")
+    
+    # Strategy 3: Try relative imports (fallback)
+    try:
+        from .secrets_path_utils import SecretsPathUtils
+        print("✅ My Config: Relative imports successful")
+        return SecretsPathUtils
+    except ImportError as e:
+        print(f"❌ Relative imports failed: {e}")
+    
+    # Strategy 4: Manual path manipulation
+    try:
+        current_file = Path(__file__).resolve()
+        project_root = current_file.parent.parent.parent.parent
+        if str(project_root) not in sys.path:
+            sys.path.insert(0, str(project_root))
+        
+        from new_data_assistant_project.src.utils.secrets_path_utils import SecretsPathUtils
+        print("✅ My Config: Manual path imports successful")
+        return SecretsPathUtils
+    except ImportError as e:
+        print(f"❌ Manual path imports failed: {e}")
+        print(f"❌ Could not import required modules: {e}")
+        return None
+
+# Import modules
+SecretsPathUtils = robust_import_modules()
 
 class MyConfig:
     """Configuration manager for the data assistant project."""

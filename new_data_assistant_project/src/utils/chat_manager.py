@@ -2,11 +2,62 @@ import streamlit as st
 from typing import Optional, List, Dict, Any, Tuple
 import logging
 from datetime import datetime
+import sys
+from pathlib import Path
 
-# Konsistente Imports - Immer vollständige Pfade
-from new_data_assistant_project.src.database.models import ChatSession, ExplanationFeedback, User
-from new_data_assistant_project.src.agents.clt_cft_agent import CLTCFTAgent
-from new_data_assistant_project.src.utils.path_utils import get_absolute_path
+# Robust import handling for different environments
+def robust_import_modules():
+    """Import required modules with multiple fallback strategies."""
+    
+    # Strategy 1: Try absolute imports (local development)
+    try:
+        from new_data_assistant_project.src.database.models import ChatSession, ExplanationFeedback, User
+        from new_data_assistant_project.src.agents.clt_cft_agent import CLTCFTAgent
+        from new_data_assistant_project.src.utils.path_utils import get_absolute_path
+        print("✅ Chat Manager: Absolute imports successful")
+        return ChatSession, ExplanationFeedback, User, CLTCFTAgent, get_absolute_path
+    except ImportError as e:
+        print(f"❌ Absolute imports failed: {e}")
+    
+    # Strategy 2: Try direct imports (Docker/production - new structure)
+    try:
+        from src.database.models import ChatSession, ExplanationFeedback, User
+        from src.agents.clt_cft_agent import CLTCFTAgent
+        from src.utils.path_utils import get_absolute_path
+        print("✅ Chat Manager: Direct imports successful")
+        return ChatSession, ExplanationFeedback, User, CLTCFTAgent, get_absolute_path
+    except ImportError as e:
+        print(f"❌ Direct imports failed: {e}")
+    
+    # Strategy 3: Try relative imports (fallback)
+    try:
+        from ..database.models import ChatSession, ExplanationFeedback, User
+        from ..agents.clt_cft_agent import CLTCFTAgent
+        from .path_utils import get_absolute_path
+        print("✅ Chat Manager: Relative imports successful")
+        return ChatSession, ExplanationFeedback, User, CLTCFTAgent, get_absolute_path
+    except ImportError as e:
+        print(f"❌ Relative imports failed: {e}")
+    
+    # Strategy 4: Manual path manipulation
+    try:
+        current_file = Path(__file__).resolve()
+        project_root = current_file.parent.parent.parent.parent
+        if str(project_root) not in sys.path:
+            sys.path.insert(0, str(project_root))
+        
+        from new_data_assistant_project.src.database.models import ChatSession, ExplanationFeedback, User
+        from new_data_assistant_project.src.agents.clt_cft_agent import CLTCFTAgent
+        from new_data_assistant_project.src.utils.path_utils import get_absolute_path
+        print("✅ Chat Manager: Manual path imports successful")
+        return ChatSession, ExplanationFeedback, User, CLTCFTAgent, get_absolute_path
+    except ImportError as e:
+        print(f"❌ Manual path imports failed: {e}")
+        st.error(f"❌ Could not import required modules: {e}")
+        st.stop()
+
+# Import modules
+ChatSession, ExplanationFeedback, User, CLTCFTAgent, get_absolute_path = robust_import_modules()
 
 logger = logging.getLogger(__name__)
 

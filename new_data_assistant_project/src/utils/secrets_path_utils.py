@@ -4,12 +4,53 @@ Secrets path utilities for the Data Assistant project.
 
 import os
 from pathlib import Path
+import sys
 
-# Docker-compatible imports
-try:
-    from new_data_assistant_project.src.utils.path_utils import get_project_root, get_absolute_path
-except ImportError:
-    from src.utils.path_utils import get_project_root, get_absolute_path
+# Robust import handling for different environments
+def robust_import_modules():
+    """Import required modules with multiple fallback strategies."""
+    
+    # Strategy 1: Try absolute imports (local development)
+    try:
+        from new_data_assistant_project.src.utils.path_utils import get_project_root, get_absolute_path
+        print("✅ Secrets Path Utils: Absolute imports successful")
+        return get_project_root, get_absolute_path
+    except ImportError as e:
+        print(f"❌ Absolute imports failed: {e}")
+    
+    # Strategy 2: Try direct imports (Docker/production - new structure)
+    try:
+        from src.utils.path_utils import get_project_root, get_absolute_path
+        print("✅ Secrets Path Utils: Direct imports successful")
+        return get_project_root, get_absolute_path
+    except ImportError as e:
+        print(f"❌ Direct imports failed: {e}")
+    
+    # Strategy 3: Try relative imports (fallback)
+    try:
+        from .path_utils import get_project_root, get_absolute_path
+        print("✅ Secrets Path Utils: Relative imports successful")
+        return get_project_root, get_absolute_path
+    except ImportError as e:
+        print(f"❌ Relative imports failed: {e}")
+    
+    # Strategy 4: Manual path manipulation
+    try:
+        current_file = Path(__file__).resolve()
+        project_root = current_file.parent.parent.parent.parent
+        if str(project_root) not in sys.path:
+            sys.path.insert(0, str(project_root))
+        
+        from new_data_assistant_project.src.utils.path_utils import get_project_root, get_absolute_path
+        print("✅ Secrets Path Utils: Manual path imports successful")
+        return get_project_root, get_absolute_path
+    except ImportError as e:
+        print(f"❌ Manual path imports failed: {e}")
+        print(f"❌ Could not import required modules: {e}")
+        return None, None
+
+# Import modules
+get_project_root, get_absolute_path = robust_import_modules()
 
 class SecretsPathUtils:
     """Utility class for managing paths to secret files and configurations."""
