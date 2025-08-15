@@ -4,106 +4,23 @@ from pathlib import Path
 import streamlit as st
 import logging
 
-# AUTO-NAVIGATE TO CORRECT DIRECTORY & SETUP IMPORTS
-def ensure_correct_working_directory():
-    """Simple setup for Streamlit - use normal imports without path manipulation."""
-    current_file = Path(__file__).resolve()
-    project_root = current_file.parent.parent
-    
-    print(f"📍 App location: {current_file}")
-    print(f"📍 Project root: {project_root}")
-    print(f"📍 Working directory: {os.getcwd()}")
-    
-    # Don't change directories or manipulate sys.path
-    # Let Streamlit handle the imports naturally
-    print("✅ Using normal Streamlit imports - no path manipulation needed")
+# Path Setup am Anfang jeder Datei
+current_file = Path(__file__).resolve()
+project_dir = current_file.parent.parent.parent
+if str(project_dir.parent) not in sys.path:
+    sys.path.insert(0, str(project_dir.parent))
 
-# Execute directory navigation before any other imports
-ensure_correct_working_directory()
+print(f"📍 App location: {current_file}")
+print(f"📍 Project directory: {project_dir}")
+print(f"📍 Working directory: {os.getcwd()}")
+print(f"📍 sys.path (first 3): {sys.path[:3]}")
 
-# Helper function for environment-aware page imports
-def import_page_module(module_name, function_name):
-    """Import page modules using environment-aware imports."""
-    import os
-    is_streamlit_cloud = os.environ.get('STREAMLIT_SERVER_RUN_ON_FILE_CHANGE') is not None
-    
-    if is_streamlit_cloud:
-        # In Streamlit Cloud, use the full project path
-        try:
-            module = __import__(f"new_data_assistant_project.frontend.pages.{module_name}", fromlist=[function_name])
-            return getattr(module, function_name)
-        except ImportError as e:
-            print(f"❌ Streamlit Cloud import failed for {module_name}: {e}")
-            return None
-    else:
-        # In local environment, try multiple import strategies
-        try:
-            # Try direct import
-            module = __import__(f"frontend.pages.{module_name}", fromlist=[function_name])
-            return getattr(module, function_name)
-        except ImportError:
-            try:
-                # Try full project path
-                module = __import__(f"new_data_assistant_project.frontend.pages.{module_name}", fromlist=[function_name])
-                return getattr(module, function_name)
-            except ImportError:
-                try:
-                    # Try relative import
-                    module = __import__(f"pages.{module_name}", fromlist=[function_name])
-                    return getattr(module, function_name)
-                except ImportError as e:
-                    print(f"❌ Local import failed for {module_name}: {e}")
-                    return None
+# Konsistente Imports - Immer vollständige Pfade
+from new_data_assistant_project.src.utils.auth_manager import AuthManager
+from new_data_assistant_project.src.utils.chat_manager import ChatManager
+from new_data_assistant_project.src.database.schema import create_tables, create_admin_user
 
-# Simple import function for Streamlit
-def simple_import():
-    """Import required modules using environment-aware imports for Streamlit Cloud."""
-    
-    # Check if we're running in Streamlit Cloud or local environment
-    import os
-    is_streamlit_cloud = os.environ.get('STREAMLIT_SERVER_RUN_ON_FILE_CHANGE') is not None
-    
-    if is_streamlit_cloud:
-        print("🌐 Detected Streamlit Cloud environment")
-        # In Streamlit Cloud, use the full project path
-        try:
-            from new_data_assistant_project.src.utils.auth_manager import AuthManager
-            from new_data_assistant_project.src.utils.chat_manager import ChatManager
-            from new_data_assistant_project.src.database.schema import create_tables, create_admin_user
-            print("✅ Streamlit Cloud imports successful")
-            return AuthManager, ChatManager, create_tables, create_admin_user
-        except ImportError as e:
-            print(f"❌ Streamlit Cloud imports failed: {e}")
-            st.error(f"❌ Could not import required modules in Streamlit Cloud: {e}")
-            st.stop()
-    else:
-        print("💻 Detected local environment")
-        # In local environment, try multiple import strategies
-        try:
-            # Try direct imports from src
-            from src.utils.auth_manager import AuthManager
-            from src.utils.chat_manager import ChatManager
-            from src.database.schema import create_tables, create_admin_user
-            print("✅ Local direct imports successful")
-            return AuthManager, ChatManager, create_tables, create_admin_user
-        except ImportError as e:
-            print(f"❌ Local direct imports failed: {e}")
-            
-            try:
-                # Fallback to full project path
-                from new_data_assistant_project.src.utils.auth_manager import AuthManager
-                from new_data_assistant_project.src.utils.chat_manager import ChatManager
-                from new_data_assistant_project.src.database.schema import create_tables, create_admin_user
-                print("✅ Local full path imports successful")
-                return AuthManager, ChatManager, create_tables, create_admin_user
-            except ImportError as e2:
-                print(f"❌ Local full path imports failed: {e2}")
-                st.error(f"❌ Could not import required modules locally: {e2}")
-                st.error("Please ensure the project structure is correct and all dependencies are installed.")
-                st.stop()
-
-# Import modules
-AuthManager, ChatManager, create_tables, create_admin_user = simple_import()
+print("✅ All imports successful")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -114,11 +31,18 @@ import traceback
 def initialize_system():
     """Initialize system by checking directories and creating tables."""
     try:
+        # Import path utilities
+        from new_data_assistant_project.src.utils.path_utils import debug_paths, get_database_path, ensure_directory_exists
+        
+        # Debug paths
+        debug_paths()
+        
         # Check required directories
-        required_dirs = ['src', 'src/database', 'frontend']
+        required_dirs = ['new_data_assistant_project/src', 'new_data_assistant_project/src/database', 'new_data_assistant_project/frontend']
         missing_dirs = []
         for dir_name in required_dirs:
-            if not os.path.exists(dir_name):
+            dir_path = Path(dir_name)
+            if not dir_path.exists():
                 missing_dirs.append(dir_name)
                 logger.error(f"❌ Missing directory: {dir_name}")
         
@@ -128,11 +52,13 @@ def initialize_system():
             return False
         
         # Check database file
-        db_path = "src/database/superstore.db"
-        if os.path.exists(db_path):
+        db_path = get_database_path() / "superstore.db"
+        if db_path.exists():
             logger.info(f"✅ Database file exists: {db_path}")
         else:
             logger.warning(f"⚠️ Database file will be created: {db_path}")
+            # Ensure database directory exists
+            ensure_directory_exists(db_path.parent)
             
         # Initialize database
         create_tables()
@@ -215,59 +141,17 @@ def render_admin_interface():
     
     # Direct page routing without sidebar navigation
     if st.session_state.current_page == "welcome":
-        try:
-            from data_assistant_project.new_data_assistant_project.frontend.pages.welcome_page import render_welcome_page
-        except ImportError:
-            try:
-                from new_data_assistant_project.frontend.pages.welcome_page import render_welcome_page
-            except ImportError:
-                try:
-                    from frontend.pages.welcome_page import render_welcome_page
-                except ImportError:
-                    try:
-                        from pages.welcome_page import render_welcome_page
-                    except ImportError:
-                        st.error("❌ Could not import welcome page")
-                        return
-        
+        from new_data_assistant_project.frontend.pages.welcome_page import render_welcome_page
         user = auth_manager.get_current_user()
         render_welcome_page(user)
     
     elif st.session_state.current_page == "assessment":
-        try:
-            from data_assistant_project.new_data_assistant_project.frontend.pages.assessment_page import render_assessment_page
-        except ImportError:
-            try:
-                from new_data_assistant_project.frontend.pages.assessment_page import render_assessment_page
-            except ImportError:
-                try:
-                    from frontend.pages.assessment_page import render_assessment_page
-                except ImportError:
-                    try:
-                        from pages.assessment_page import render_assessment_page
-                    except ImportError:
-                        st.error("❌ Could not import assessment page")
-                        return
-        
+        from new_data_assistant_project.frontend.pages.assessment_page import render_assessment_page
         user = auth_manager.get_current_user()
         render_assessment_page(user)
     
     elif st.session_state.current_page == "task":
-        try:
-            from data_assistant_project.new_data_assistant_project.frontend.pages.task_page import render_task_page
-        except ImportError:
-            try:
-                from new_data_assistant_project.frontend.pages.task_page import render_task_page
-            except ImportError:
-                try:
-                    from frontend.pages.task_page import render_task_page
-                except ImportError:
-                    try:
-                        from pages.task_page import render_task_page
-                    except ImportError:
-                        st.error("❌ Could not import task page")
-                        return
-        
+        from new_data_assistant_project.frontend.pages.task_page import render_task_page
         user = auth_manager.get_current_user()
         render_task_page(user)
     
@@ -276,22 +160,7 @@ def render_admin_interface():
         chat_manager.render_chat_interface(user)
     
     elif st.session_state.current_page == "evaluation":
-        # Import evaluation dashboard with same robust strategy
-        try:
-            from data_assistant_project.new_data_assistant_project.frontend.pages.evaluation_dashboard import render_evaluation_dashboard
-        except ImportError:
-            try:
-                from new_data_assistant_project.frontend.pages.evaluation_dashboard import render_evaluation_dashboard
-            except ImportError:
-                try:
-                    from frontend.pages.evaluation_dashboard import render_evaluation_dashboard
-                except ImportError:
-                    try:
-                        from pages.evaluation_dashboard import render_evaluation_dashboard
-                    except ImportError:
-                        st.error("❌ Could not import evaluation dashboard")
-                        return
-        
+        from new_data_assistant_project.frontend.pages.evaluation_dashboard import render_evaluation_dashboard
         render_evaluation_dashboard()
 
 def render_user_interface(user):
@@ -305,7 +174,7 @@ def render_user_interface(user):
     st.sidebar.markdown("<div style='margin: 1rem 0; border-top: 1px solid #f0f0f0;'></div>", unsafe_allow_html=True)
     
     # Add navigation controls for users
-    st.sidebar.markdown("## 🧭 Navigation")
+    st.sidebar.markdown("## �� Navigation")
     
     # Navigation buttons
     if st.sidebar.button("🏠 Welcome", key="user_welcome"):
@@ -330,57 +199,15 @@ def render_user_interface(user):
     
     # Page routing
     if st.session_state.current_page == "welcome":
-        try:
-            from data_assistant_project.new_data_assistant_project.frontend.pages.welcome_page import render_welcome_page
-        except ImportError:
-            try:
-                from new_data_assistant_project.frontend.pages.welcome_page import render_welcome_page
-            except ImportError:
-                try:
-                    from frontend.pages.welcome_page import render_welcome_page
-                except ImportError:
-                    try:
-                        from pages.welcome_page import render_welcome_page
-                    except ImportError:
-                        st.error("❌ Could not import welcome page")
-                        return
-        
+        from new_data_assistant_project.frontend.pages.welcome_page import render_welcome_page
         render_welcome_page(user)
     
     elif st.session_state.current_page == "assessment":
-        try:
-            from data_assistant_project.new_data_assistant_project.frontend.pages.assessment_page import render_assessment_page
-        except ImportError:
-            try:
-                from new_data_assistant_project.frontend.pages.assessment_page import render_assessment_page
-            except ImportError:
-                try:
-                    from frontend.pages.assessment_page import render_assessment_page
-                except ImportError:
-                    try:
-                        from pages.assessment_page import render_assessment_page
-                    except ImportError:
-                        st.error("❌ Could not import assessment page")
-                        return
-        
+        from new_data_assistant_project.frontend.pages.assessment_page import render_assessment_page
         render_assessment_page(user)
     
     elif st.session_state.current_page == "task":
-        try:
-            from data_assistant_project.new_data_assistant_project.frontend.pages.task_page import render_task_page
-        except ImportError:
-            try:
-                from new_data_assistant_project.frontend.pages.task_page import render_task_page
-            except ImportError:
-                try:
-                    from frontend.pages.task_page import render_task_page
-                except ImportError:
-                    try:
-                        from pages.task_page import render_task_page
-                    except ImportError:
-                        st.error("❌ Could not import task page")
-                        return
-        
+        from new_data_assistant_project.frontend.pages.task_page import render_task_page
         render_task_page(user)
     
     elif st.session_state.current_page == "data_assistant":
@@ -396,21 +223,7 @@ def render_user_interface(user):
             st.rerun()
             return
         
-        try:
-            from data_assistant_project.new_data_assistant_project.frontend.pages.feedback_page import render_feedback_page
-        except ImportError:
-            try:
-                from new_data_assistant_project.frontend.pages.feedback_page import render_feedback_page
-            except ImportError:
-                try:
-                    from frontend.pages.feedback_page import render_feedback_page
-                except ImportError:
-                    try:
-                        from pages.feedback_page import render_feedback_page
-                    except ImportError:
-                        st.error("❌ Could not import feedback page")
-                        return
-        
+        from new_data_assistant_project.frontend.pages.feedback_page import render_feedback_page
         render_feedback_page(user)
 
 
