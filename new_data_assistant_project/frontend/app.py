@@ -5,104 +5,41 @@ import streamlit as st
 import logging
 
 # AUTO-NAVIGATE TO CORRECT DIRECTORY & SETUP IMPORTS
-'''
 def ensure_correct_working_directory():
-    """Automatically navigate to the correct working directory and setup imports."""
+    """Simple setup for Streamlit - use normal imports without path manipulation."""
     current_file = Path(__file__).resolve()
+    project_root = current_file.parent.parent
     
-    # We expect to be in: .../new_data_assistant_project/frontend/app.py
-    # So we need to go up one level to new_data_assistant_project
-    expected_project_root = current_file.parent.parent
+    print(f"📍 App location: {current_file}")
+    print(f"📍 Project root: {project_root}")
+    print(f"📍 Working directory: {os.getcwd()}")
     
-    # Check if we're in the right place
-    if expected_project_root.name == 'new_data_assistant_project':
-        # Change to the project root directory
-        os.chdir(expected_project_root)
-        print(f"✅ Auto-navigated to: {expected_project_root}")
-    else:
-        # Try to find new_data_assistant_project in current or parent directories
-        search_path = current_file.parent
-        for _ in range(5):  # Search up to 5 levels up
-            new_project = search_path / 'new_data_assistant_project'
-            if new_project.exists() and (new_project / 'src').exists():
-                os.chdir(new_project)
-                print(f"✅ Found and navigated to: {new_project}")
-                break
-            search_path = search_path.parent
-            if search_path == search_path.parent:  # Reached filesystem root
-                break
-        else:
-            print(f"❌ Warning: Could not find new_data_assistant_project directory")
-            print(f"Current working directory: {os.getcwd()}")
-    
-    # Setup Python path for imports
-    project_root = Path.cwd()
-    parent_dir = project_root.parent
-    
-    # Add paths to sys.path
-    paths_to_add = [str(project_root), str(parent_dir)]
-    for path in paths_to_add:
-        if path not in sys.path:
-            sys.path.insert(0, path)
-    
-    # Try to import our global setup
-    try:
-        import new_data_assistant_project
-        print("✅ Global import setup loaded successfully")
-    except ImportError:
-        print("⚠️ Could not load global import setup, using fallback")
-'''
-# Execute directory navigation before any other imports
-#ensure_correct_working_directory()
+    # Don't change directories or manipulate sys.path
+    # Let Streamlit handle the imports naturally
+    print("✅ Using normal Streamlit imports - no path manipulation needed")
 
-# Robust import function with multiple fallback strategies
-def robust_import():
-    """Import required modules with multiple fallback strategies."""
+# Execute directory navigation before any other imports
+ensure_correct_working_directory()
+
+# Simple import function for Streamlit
+def simple_import():
+    """Import required modules using normal Streamlit imports."""
     
     try:
-        from new_data_assistant_project.src.utils.auth_manager import AuthManager
-        from new_data_assistant_project.src.utils.chat_manager import ChatManager
-        from new_data_assistant_project.src.database.schema import create_tables, create_admin_user
-        print("✅ Strategy 1: Absolute imports successful")
-        return AuthManager, ChatManager, create_tables, create_admin_user
-    except ImportError as e:
-        print(f"❌ Absolute imports failed: {e}")
-    
-    try:
+        # Try direct imports from src (most common case)
         from src.utils.auth_manager import AuthManager
         from src.utils.chat_manager import ChatManager
         from src.database.schema import create_tables, create_admin_user
-        print("✅ Strategy 2: Direct imports successful")
+        print("✅ Direct imports from src successful")
         return AuthManager, ChatManager, create_tables, create_admin_user
     except ImportError as e:
         print(f"❌ Direct imports failed: {e}")
-    
-    try:
-        from src.utils.auth_manager import AuthManager
-        from src.utils.chat_manager import ChatManager
-        from src.database.schema import create_tables, create_admin_user
-        print("✅ Strategy 3: Relative imports successful")
-        return AuthManager, ChatManager, create_tables, create_admin_user
-    except ImportError as e:
-        print(f"❌ Relative imports failed: {e}")
-    
-    # Manual path manipulation as last resort
-    current_dir = Path.cwd()
-    sys.path.insert(0, str(current_dir))
-    sys.path.insert(0, str(current_dir / 'src'))
-    try:
-        from utils.auth_manager import AuthManager
-        from utils.chat_manager import ChatManager
-        from database.schema import create_tables, create_admin_user
-        print("✅ Strategy 4: Manual path imports successful")
-        return AuthManager, ChatManager, create_tables, create_admin_user
-    except ImportError as e:
-        print(f"❌ Manual path imports failed: {e}")
         st.error(f"❌ Could not import required modules: {e}")
+        st.error("Please ensure the project structure is correct and all dependencies are installed.")
         st.stop()
 
 # Import modules
-AuthManager, ChatManager, create_tables, create_admin_user = robust_import()
+AuthManager, ChatManager, create_tables, create_admin_user = simple_import()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -188,6 +125,30 @@ def main():
 def render_admin_interface():
     """Render admin interface with navigation."""
     
+    # Add navigation controls for admin
+    st.sidebar.markdown("## 🎯 Admin Navigation")
+    
+    # Navigation buttons
+    if st.sidebar.button("🏠 Welcome", key="admin_welcome"):
+        st.session_state.current_page = "welcome"
+        st.rerun()
+    
+    if st.sidebar.button("📊 Assessment", key="admin_assessment"):
+        st.session_state.current_page = "assessment"
+        st.rerun()
+    
+    if st.sidebar.button("💼 Task Phase", key="admin_task"):
+        st.session_state.current_page = "task"
+        st.rerun()
+    
+    if st.sidebar.button("🤖 Data Assistant", key="admin_data_assistant"):
+        st.session_state.current_page = "data_assistant"
+        st.rerun()
+    
+    if st.sidebar.button("📈 Evaluation Dashboard", key="admin_evaluation"):
+        st.session_state.current_page = "evaluation"
+        st.rerun()
+    
     # Direct page routing without sidebar navigation
     if st.session_state.current_page == "welcome":
         try:
@@ -205,7 +166,7 @@ def render_admin_interface():
         user = auth_manager.get_current_user()
         render_welcome_page(user)
     
-    elif page == "📊 Assessment":
+    elif st.session_state.current_page == "assessment":
         try:
             from new_data_assistant_project.frontend.pages.assessment_page import render_assessment_page
         except ImportError:
@@ -221,7 +182,7 @@ def render_admin_interface():
         user = auth_manager.get_current_user()
         render_assessment_page(user)
     
-    elif page == "💼 Task Phase":
+    elif st.session_state.current_page == "task":
         try:
             from new_data_assistant_project.frontend.pages.task_page import render_task_page
         except ImportError:
@@ -237,11 +198,11 @@ def render_admin_interface():
         user = auth_manager.get_current_user()
         render_task_page(user)
     
-    elif page == "🤖 Data Assistant":
+    elif st.session_state.current_page == "data_assistant":
         user = auth_manager.get_current_user()
         chat_manager.render_chat_interface(user)
     
-    else:  # Evaluation Dashboard
+    elif st.session_state.current_page == "evaluation":
         # Import evaluation dashboard with same robust strategy
         try:
             from new_data_assistant_project.frontend.pages.evaluation_dashboard import render_evaluation_dashboard
@@ -267,7 +228,29 @@ def render_user_interface(user):
     # Clean sidebar separator
     st.sidebar.markdown("<div style='margin: 1rem 0; border-top: 1px solid #f0f0f0;'></div>", unsafe_allow_html=True)
     
-
+    # Add navigation controls for users
+    st.sidebar.markdown("## 🧭 Navigation")
+    
+    # Navigation buttons
+    if st.sidebar.button("🏠 Welcome", key="user_welcome"):
+        st.session_state.current_page = "welcome"
+        st.rerun()
+    
+    if st.sidebar.button("📊 Assessment", key="user_assessment"):
+        st.session_state.current_page = "assessment"
+        st.rerun()
+    
+    if st.sidebar.button("💼 Task Phase", key="user_task"):
+        st.session_state.current_page = "task"
+        st.rerun()
+    
+    if st.sidebar.button("🤖 Data Assistant", key="user_data_assistant"):
+        st.session_state.current_page = "data_assistant"
+        st.rerun()
+    
+    if st.sidebar.button("📝 Feedback", key="user_feedback"):
+        st.session_state.current_page = "feedback"
+        st.rerun()
     
     # Page routing
     if st.session_state.current_page == "welcome":
