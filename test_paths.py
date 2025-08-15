@@ -50,7 +50,7 @@ try:
     print(f"  Frontend Path exists: {frontend_path.exists()}")
     
     # Test specific paths
-    db_file = get_absolute_path('src/database/superstore.db')
+    db_file = get_absolute_path('new_data_assistant_project/src/database/superstore.db')
     print(f"  Database File: {db_file}")
     print(f"  Database File exists: {db_file.exists()}")
     

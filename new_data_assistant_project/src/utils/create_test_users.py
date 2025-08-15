@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 def create_test_users():
     """Create test users with different expertise levels."""
-    db_path = get_absolute_path('src/database/superstore.db')
+    db_path = get_absolute_path('new_data_assistant_project/src/database/superstore.db')
     
     test_users = [
         {

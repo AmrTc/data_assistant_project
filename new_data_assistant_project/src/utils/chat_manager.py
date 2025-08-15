@@ -14,7 +14,7 @@ class ChatManager:
     """Manages isolated chat sessions for users with feedback collection."""
     
     def __init__(self):
-        self.db_path = get_absolute_path('src/database/superstore.db')
+        self.db_path = get_absolute_path('new_data_assistant_project/src/database/superstore.db')
         self.agent = CLTCFTAgent(database_path=self.db_path)
         
         # Initialize global session state for feedback tracking

@@ -13,7 +13,7 @@ class AuthManager:
     """Manages user authentication and session state."""
     
     def __init__(self):
-        self.db_path = get_absolute_path('src/database/superstore.db')
+        self.db_path = get_absolute_path('new_data_assistant_project/src/database/superstore.db')
         
         # Initialize session state
         if 'authenticated' not in st.session_state:
