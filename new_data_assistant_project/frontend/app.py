@@ -4,7 +4,7 @@ from pathlib import Path
 import streamlit as st
 import logging
 
-# Path Setup am Anfang jeder Datei
+# Path Setup am Anfang jeder Datei - gleiche Strategie wie in root app.py
 current_file = Path(__file__).resolve()
 project_dir = current_file.parent.parent.parent
 if str(project_dir.parent) not in sys.path:
