@@ -1,4 +1,0 @@
-# System packages required for the Data Assistant Project
-sqlite3
-python3-dev
-build-essential
