@@ -27,9 +27,9 @@ def simple_import():
     
     try:
         # Try full path imports that match the project structure
-        from data_assistant_project.new_data_assistant_project.src.utils.auth_manager import AuthManager
-        from data_assistant_project.new_data_assistant_project.src.utils.chat_manager import ChatManager
-        from data_assistant_project.new_data_assistant_project.src.database.schema import create_tables, create_admin_user
+        from new_data_assistant_project.src.utils.auth_manager import AuthManager
+        from new_data_assistant_project.src.utils.chat_manager import ChatManager
+        from new_data_assistant_project.src.database.schema import create_tables, create_admin_user
         print("✅ Full path imports successful")
         return AuthManager, ChatManager, create_tables, create_admin_user
     except ImportError as e:
