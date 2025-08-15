@@ -1,0 +1,25 @@
+# Python virtual environment
+venv/
+.venv/
+env/
+.env
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE settings
+.vscode/
+.idea/
+
+# Environment variables
+.env
+.env.*
+
+# Streamlit secrets (local development)
+.streamlit/secrets.toml
+
+# System files
+.DS_Store
+new_data_assistant_project/.streamlit/secrets.toml
