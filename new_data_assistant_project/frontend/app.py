@@ -26,17 +26,27 @@ def simple_import():
     """Import required modules using normal Streamlit imports."""
     
     try:
-        # Try direct imports from src (most common case)
-        from src.utils.auth_manager import AuthManager
-        from src.utils.chat_manager import ChatManager
-        from src.database.schema import create_tables, create_admin_user
-        print("✅ Direct imports from src successful")
+        # Try full path imports that match the project structure
+        from data_assistant_project.new_data_assistant_project.src.utils.auth_manager import AuthManager
+        from data_assistant_project.new_data_assistant_project.src.utils.chat_manager import ChatManager
+        from data_assistant_project.new_data_assistant_project.src.database.schema import create_tables, create_admin_user
+        print("✅ Full path imports successful")
         return AuthManager, ChatManager, create_tables, create_admin_user
     except ImportError as e:
-        print(f"❌ Direct imports failed: {e}")
-        st.error(f"❌ Could not import required modules: {e}")
-        st.error("Please ensure the project structure is correct and all dependencies are installed.")
-        st.stop()
+        print(f"❌ Full path imports failed: {e}")
+        
+        # Fallback to direct imports from src
+        try:
+            from src.utils.auth_manager import AuthManager
+            from src.utils.chat_manager import ChatManager
+            from src.database.schema import create_tables, create_admin_user
+            print("✅ Direct imports from src successful")
+            return AuthManager, ChatManager, create_tables, create_admin_user
+        except ImportError as e2:
+            print(f"❌ Direct imports failed: {e2}")
+            st.error(f"❌ Could not import required modules: {e2}")
+            st.error("Please ensure the project structure is correct and all dependencies are installed.")
+            st.stop()
 
 # Import modules
 AuthManager, ChatManager, create_tables, create_admin_user = simple_import()
@@ -152,48 +162,57 @@ def render_admin_interface():
     # Direct page routing without sidebar navigation
     if st.session_state.current_page == "welcome":
         try:
-            from new_data_assistant_project.frontend.pages.welcome_page import render_welcome_page
+            from data_assistant_project.new_data_assistant_project.frontend.pages.welcome_page import render_welcome_page
         except ImportError:
             try:
-                from frontend.pages.welcome_page import render_welcome_page
+                from new_data_assistant_project.frontend.pages.welcome_page import render_welcome_page
             except ImportError:
                 try:
-                    from pages.welcome_page import render_welcome_page
+                    from frontend.pages.welcome_page import render_welcome_page
                 except ImportError:
-                    st.error("❌ Could not import welcome page")
-                    return
+                    try:
+                        from pages.welcome_page import render_welcome_page
+                    except ImportError:
+                        st.error("❌ Could not import welcome page")
+                        return
         
         user = auth_manager.get_current_user()
         render_welcome_page(user)
     
     elif st.session_state.current_page == "assessment":
         try:
-            from new_data_assistant_project.frontend.pages.assessment_page import render_assessment_page
+            from data_assistant_project.new_data_assistant_project.frontend.pages.assessment_page import render_assessment_page
         except ImportError:
             try:
-                from frontend.pages.assessment_page import render_assessment_page
+                from new_data_assistant_project.frontend.pages.assessment_page import render_assessment_page
             except ImportError:
                 try:
-                    from pages.assessment_page import render_assessment_page
+                    from frontend.pages.assessment_page import render_assessment_page
                 except ImportError:
-                    st.error("❌ Could not import assessment page")
-                    return
+                    try:
+                        from pages.assessment_page import render_assessment_page
+                    except ImportError:
+                        st.error("❌ Could not import assessment page")
+                        return
         
         user = auth_manager.get_current_user()
         render_assessment_page(user)
     
     elif st.session_state.current_page == "task":
         try:
-            from new_data_assistant_project.frontend.pages.task_page import render_task_page
+            from data_assistant_project.new_data_assistant_project.frontend.pages.task_page import render_task_page
         except ImportError:
             try:
-                from frontend.pages.task_page import render_task_page
+                from new_data_assistant_project.frontend.pages.task_page import render_task_page
             except ImportError:
                 try:
-                    from pages.task_page import render_task_page
+                    from frontend.pages.task_page import render_task_page
                 except ImportError:
-                    st.error("❌ Could not import task page")
-                    return
+                    try:
+                        from pages.task_page import render_task_page
+                    except ImportError:
+                        st.error("❌ Could not import task page")
+                        return
         
         user = auth_manager.get_current_user()
         render_task_page(user)
@@ -205,16 +224,19 @@ def render_admin_interface():
     elif st.session_state.current_page == "evaluation":
         # Import evaluation dashboard with same robust strategy
         try:
-            from new_data_assistant_project.frontend.pages.evaluation_dashboard import render_evaluation_dashboard
+            from data_assistant_project.new_data_assistant_project.frontend.pages.evaluation_dashboard import render_evaluation_dashboard
         except ImportError:
             try:
-                from frontend.pages.evaluation_dashboard import render_evaluation_dashboard
+                from new_data_assistant_project.frontend.pages.evaluation_dashboard import render_evaluation_dashboard
             except ImportError:
                 try:
-                    from pages.evaluation_dashboard import render_evaluation_dashboard
+                    from frontend.pages.evaluation_dashboard import render_evaluation_dashboard
                 except ImportError:
-                    st.error("❌ Could not import evaluation dashboard")
-                    return
+                    try:
+                        from pages.evaluation_dashboard import render_evaluation_dashboard
+                    except ImportError:
+                        st.error("❌ Could not import evaluation dashboard")
+                        return
         
         render_evaluation_dashboard()
 
@@ -255,46 +277,55 @@ def render_user_interface(user):
     # Page routing
     if st.session_state.current_page == "welcome":
         try:
-            from new_data_assistant_project.frontend.pages.welcome_page import render_welcome_page
+            from data_assistant_project.new_data_assistant_project.frontend.pages.welcome_page import render_welcome_page
         except ImportError:
             try:
-                from frontend.pages.welcome_page import render_welcome_page
+                from new_data_assistant_project.frontend.pages.welcome_page import render_welcome_page
             except ImportError:
                 try:
-                    from pages.welcome_page import render_welcome_page
+                    from frontend.pages.welcome_page import render_welcome_page
                 except ImportError:
-                    st.error("❌ Could not import welcome page")
-                    return
+                    try:
+                        from pages.welcome_page import render_welcome_page
+                    except ImportError:
+                        st.error("❌ Could not import welcome page")
+                        return
         
         render_welcome_page(user)
     
     elif st.session_state.current_page == "assessment":
         try:
-            from new_data_assistant_project.frontend.pages.assessment_page import render_assessment_page
+            from data_assistant_project.new_data_assistant_project.frontend.pages.assessment_page import render_assessment_page
         except ImportError:
             try:
-                from frontend.pages.assessment_page import render_assessment_page
+                from new_data_assistant_project.frontend.pages.assessment_page import render_assessment_page
             except ImportError:
                 try:
-                    from pages.assessment_page import render_assessment_page
+                    from frontend.pages.assessment_page import render_assessment_page
                 except ImportError:
-                    st.error("❌ Could not import assessment page")
-                    return
+                    try:
+                        from pages.assessment_page import render_assessment_page
+                    except ImportError:
+                        st.error("❌ Could not import assessment page")
+                        return
         
         render_assessment_page(user)
     
     elif st.session_state.current_page == "task":
         try:
-            from new_data_assistant_project.frontend.pages.task_page import render_task_page
+            from data_assistant_project.new_data_assistant_project.frontend.pages.task_page import render_task_page
         except ImportError:
             try:
-                from frontend.pages.task_page import render_task_page
+                from new_data_assistant_project.frontend.pages.task_page import render_task_page
             except ImportError:
                 try:
-                    from pages.task_page import render_task_page
+                    from frontend.pages.task_page import render_task_page
                 except ImportError:
-                    st.error("❌ Could not import task page")
-                    return
+                    try:
+                        from pages.task_page import render_task_page
+                    except ImportError:
+                        st.error("❌ Could not import task page")
+                        return
         
         render_task_page(user)
     
@@ -312,16 +343,19 @@ def render_user_interface(user):
             return
         
         try:
-            from new_data_assistant_project.frontend.pages.feedback_page import render_feedback_page
+            from data_assistant_project.new_data_assistant_project.frontend.pages.feedback_page import render_feedback_page
         except ImportError:
             try:
-                from frontend.pages.feedback_page import render_feedback_page
+                from new_data_assistant_project.frontend.pages.feedback_page import render_feedback_page
             except ImportError:
                 try:
-                    from pages.feedback_page import render_feedback_page
+                    from frontend.pages.feedback_page import render_feedback_page
                 except ImportError:
-                    st.error("❌ Could not import feedback page")
-                    return
+                    try:
+                        from pages.feedback_page import render_feedback_page
+                    except ImportError:
+                        st.error("❌ Could not import feedback page")
+                        return
         
         render_feedback_page(user)
 
