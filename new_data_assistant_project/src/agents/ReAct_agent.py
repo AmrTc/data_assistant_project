@@ -9,11 +9,8 @@ import logging
 import os
 from pathlib import Path
 
-# Docker-compatible imports
-try:
-    from new_data_assistant_project.src.utils.my_config import MyConfig
-except ImportError:
-    from src.utils.my_config import MyConfig
+# Konsistente Imports - Immer vollständige Pfade
+from new_data_assistant_project.src.utils.my_config import MyConfig
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

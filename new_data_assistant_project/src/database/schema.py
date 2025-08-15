@@ -102,11 +102,8 @@ def create_tables(db_path: str = "src/database/superstore.db"):
 def create_admin_user(db_path: str = "src/database/superstore.db"):
     """Create default admin user."""
     try:
-        # Docker-compatible imports
-        try:
-            from new_data_assistant_project.src.database.models import User
-        except ImportError:
-            from src.database.models import User
+        # Konsistente Imports - Immer vollständige Pfade
+        from new_data_assistant_project.src.database.models import User
         
         # Check if admin already exists
         admin = User.get_by_username(db_path, 'admin')

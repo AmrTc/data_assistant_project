@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from .path_utils import get_project_root, get_absolute_path, get_relative_path
+from .path_utils import get_project_root, get_absolute_path
 
 class DataPathUtils:
     """Utility class for managing data directory paths."""

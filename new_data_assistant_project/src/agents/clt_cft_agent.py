@@ -9,13 +9,9 @@ import re
 import os
 from pathlib import Path
 
-# Docker-compatible imports
-try:
-    from new_data_assistant_project.src.utils.my_config import MyConfig
-    from new_data_assistant_project.src.agents.ReAct_agent import QueryResult, ReActAgent
-except ImportError:
-    from src.utils.my_config import MyConfig
-    from src.agents.ReAct_agent import QueryResult, ReActAgent
+# Konsistente Imports - Immer vollständige Pfade
+from new_data_assistant_project.src.utils.my_config import MyConfig
+from new_data_assistant_project.src.agents.ReAct_agent import QueryResult, ReActAgent
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

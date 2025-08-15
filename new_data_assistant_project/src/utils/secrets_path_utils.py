@@ -7,9 +7,9 @@ from pathlib import Path
 
 # Docker-compatible imports
 try:
-    from new_data_assistant_project.src.utils.path_utils import get_project_root, get_absolute_path, get_relative_path
+    from new_data_assistant_project.src.utils.path_utils import get_project_root, get_absolute_path
 except ImportError:
-    from src.utils.path_utils import get_project_root, get_absolute_path, get_relative_path
+    from src.utils.path_utils import get_project_root, get_absolute_path
 
 class SecretsPathUtils:
     """Utility class for managing paths to secret files and configurations."""

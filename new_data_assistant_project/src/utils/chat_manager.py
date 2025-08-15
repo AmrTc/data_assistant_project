@@ -3,15 +3,10 @@ from typing import Optional, List, Dict, Any, Tuple
 import logging
 from datetime import datetime
 
-# Docker-compatible imports
-try:
-    from new_data_assistant_project.src.database.models import ChatSession, ExplanationFeedback, User
-    from new_data_assistant_project.src.agents.clt_cft_agent import CLTCFTAgent
-    from new_data_assistant_project.src.utils.path_utils import get_absolute_path
-except ImportError:
-    from src.database.models import ChatSession, ExplanationFeedback, User
-    from src.agents.clt_cft_agent import CLTCFTAgent
-    from src.utils.path_utils import get_absolute_path
+# Konsistente Imports - Immer vollständige Pfade
+from new_data_assistant_project.src.database.models import ChatSession, ExplanationFeedback, User
+from new_data_assistant_project.src.agents.clt_cft_agent import CLTCFTAgent
+from new_data_assistant_project.src.utils.path_utils import get_absolute_path
 
 logger = logging.getLogger(__name__)
 
