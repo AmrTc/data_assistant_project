@@ -37,8 +37,8 @@ def initialize_system():
         # Debug paths
         debug_paths()
         
-        # Check required directories
-        required_dirs = ['new_data_assistant_project/src', 'new_data_assistant_project/src/database', 'new_data_assistant_project/frontend']
+        # Check required directories - we're already in new_data_assistant_project, so use relative paths
+        required_dirs = ['src', 'src/database', 'frontend']
         missing_dirs = []
         for dir_name in required_dirs:
             dir_path = Path(dir_name)
@@ -51,7 +51,7 @@ def initialize_system():
             logger.error(f"Current directory contents: {os.listdir('.')}")
             return False
         
-        # Check database file
+        # Check database file using path utilities
         db_path = get_database_path() / "superstore.db"
         if db_path.exists():
             logger.info(f"✅ Database file exists: {db_path}")

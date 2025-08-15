@@ -7,18 +7,20 @@ import os
 from pathlib import Path
 
 def get_project_root():
-    """Get the absolute path to the project root directory."""
+    """Get the absolute path to the new_data_assistant_project directory."""
     current_file = Path(__file__).resolve()
-    # Navigate from src/utils/path_utils.py to project root
-    project_root = current_file.parent.parent.parent.parent
+    # Navigate from src/utils/path_utils.py to new_data_assistant_project root
+    # We're in: .../new_data_assistant_project/src/utils/path_utils.py
+    # So we need to go up 3 levels to reach new_data_assistant_project
+    project_root = current_file.parent.parent.parent
     return project_root
 
 def get_absolute_path(relative_path):
     """
-    Convert a relative path to an absolute path from the project root.
+    Convert a relative path to an absolute path from the new_data_assistant_project root.
     
     Args:
-        relative_path (str): Path relative to project root (e.g., 'src/database/superstore.db')
+        relative_path (str): Path relative to new_data_assistant_project root (e.g., 'src/database/superstore.db')
     
     Returns:
         Path: Absolute path to the file/directory
@@ -29,15 +31,15 @@ def get_absolute_path(relative_path):
 
 def get_data_path():
     """Get the absolute path to the data directory."""
-    return get_absolute_path('new_data_assistant_project/data')
+    return get_absolute_path('data')
 
 def get_database_path():
     """Get the absolute path to the database directory."""
-    return get_absolute_path('new_data_assistant_project/src/database')
+    return get_absolute_path('src/database')
 
 def get_frontend_path():
     """Get the absolute path to the frontend directory."""
-    return get_absolute_path('new_data_assistant_project/frontend')
+    return get_absolute_path('frontend')
 
 def ensure_directory_exists(path):
     """Ensure a directory exists, create it if it doesn't."""
@@ -52,7 +54,7 @@ def is_streamlit_cloud():
 def debug_paths():
     """Debug function to print all important paths."""
     print("🔍 Path Debug Information:")
-    print(f"  Project Root: {get_project_root()}")
+    print(f"  Project Root (new_data_assistant_project): {get_project_root()}")
     print(f"  Data Path: {get_data_path()}")
     print(f"  Database Path: {get_database_path()}")
     print(f"  Frontend Path: {get_frontend_path()}")
