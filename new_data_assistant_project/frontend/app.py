@@ -21,32 +21,86 @@ def ensure_correct_working_directory():
 # Execute directory navigation before any other imports
 ensure_correct_working_directory()
 
+# Helper function for environment-aware page imports
+def import_page_module(module_name, function_name):
+    """Import page modules using environment-aware imports."""
+    import os
+    is_streamlit_cloud = os.environ.get('STREAMLIT_SERVER_RUN_ON_FILE_CHANGE') is not None
+    
+    if is_streamlit_cloud:
+        # In Streamlit Cloud, use the full project path
+        try:
+            module = __import__(f"new_data_assistant_project.frontend.pages.{module_name}", fromlist=[function_name])
+            return getattr(module, function_name)
+        except ImportError as e:
+            print(f"❌ Streamlit Cloud import failed for {module_name}: {e}")
+            return None
+    else:
+        # In local environment, try multiple import strategies
+        try:
+            # Try direct import
+            module = __import__(f"frontend.pages.{module_name}", fromlist=[function_name])
+            return getattr(module, function_name)
+        except ImportError:
+            try:
+                # Try full project path
+                module = __import__(f"new_data_assistant_project.frontend.pages.{module_name}", fromlist=[function_name])
+                return getattr(module, function_name)
+            except ImportError:
+                try:
+                    # Try relative import
+                    module = __import__(f"pages.{module_name}", fromlist=[function_name])
+                    return getattr(module, function_name)
+                except ImportError as e:
+                    print(f"❌ Local import failed for {module_name}: {e}")
+                    return None
+
 # Simple import function for Streamlit
 def simple_import():
-    """Import required modules using normal Streamlit imports."""
+    """Import required modules using environment-aware imports for Streamlit Cloud."""
     
-    try:
-        # Try full path imports that match the project structure
-        from new_data_assistant_project.src.utils.auth_manager import AuthManager
-        from new_data_assistant_project.src.utils.chat_manager import ChatManager
-        from new_data_assistant_project.src.database.schema import create_tables, create_admin_user
-        print("✅ Full path imports successful")
-        return AuthManager, ChatManager, create_tables, create_admin_user
-    except ImportError as e:
-        print(f"❌ Full path imports failed: {e}")
-        
-        # Fallback to direct imports from src
+    # Check if we're running in Streamlit Cloud or local environment
+    import os
+    is_streamlit_cloud = os.environ.get('STREAMLIT_SERVER_RUN_ON_FILE_CHANGE') is not None
+    
+    if is_streamlit_cloud:
+        print("🌐 Detected Streamlit Cloud environment")
+        # In Streamlit Cloud, use the full project path
         try:
+            from new_data_assistant_project.src.utils.auth_manager import AuthManager
+            from new_data_assistant_project.src.utils.chat_manager import ChatManager
+            from new_data_assistant_project.src.database.schema import create_tables, create_admin_user
+            print("✅ Streamlit Cloud imports successful")
+            return AuthManager, ChatManager, create_tables, create_admin_user
+        except ImportError as e:
+            print(f"❌ Streamlit Cloud imports failed: {e}")
+            st.error(f"❌ Could not import required modules in Streamlit Cloud: {e}")
+            st.stop()
+    else:
+        print("💻 Detected local environment")
+        # In local environment, try multiple import strategies
+        try:
+            # Try direct imports from src
             from src.utils.auth_manager import AuthManager
             from src.utils.chat_manager import ChatManager
             from src.database.schema import create_tables, create_admin_user
-            print("✅ Direct imports from src successful")
+            print("✅ Local direct imports successful")
             return AuthManager, ChatManager, create_tables, create_admin_user
-        except ImportError as e2:
-            print(f"❌ Direct imports failed: {e2}")
-            st.error(f"❌ Could not import required modules: {e2}")
-            st.error("Please ensure the project structure is correct and all dependencies are installed.")
-            st.stop()
+        except ImportError as e:
+            print(f"❌ Local direct imports failed: {e}")
+            
+            try:
+                # Fallback to full project path
+                from new_data_assistant_project.src.utils.auth_manager import AuthManager
+                from new_data_assistant_project.src.utils.chat_manager import ChatManager
+                from new_data_assistant_project.src.database.schema import create_tables, create_admin_user
+                print("✅ Local full path imports successful")
+                return AuthManager, ChatManager, create_tables, create_admin_user
+            except ImportError as e2:
+                print(f"❌ Local full path imports failed: {e2}")
+                st.error(f"❌ Could not import required modules locally: {e2}")
+                st.error("Please ensure the project structure is correct and all dependencies are installed.")
+                st.stop()
 
 # Import modules
 AuthManager, ChatManager, create_tables, create_admin_user = simple_import()
