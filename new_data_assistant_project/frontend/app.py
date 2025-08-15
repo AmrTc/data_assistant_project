@@ -5,6 +5,7 @@ import streamlit as st
 import logging
 
 # AUTO-NAVIGATE TO CORRECT DIRECTORY & SETUP IMPORTS
+'''
 def ensure_correct_working_directory():
     """Automatically navigate to the correct working directory and setup imports."""
     current_file = Path(__file__).resolve()
@@ -50,9 +51,9 @@ def ensure_correct_working_directory():
         print("✅ Global import setup loaded successfully")
     except ImportError:
         print("⚠️ Could not load global import setup, using fallback")
-
+'''
 # Execute directory navigation before any other imports
-ensure_correct_working_directory()
+#ensure_correct_working_directory()
 
 # Robust import function with multiple fallback strategies
 def robust_import():
