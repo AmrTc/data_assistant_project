@@ -32,6 +32,8 @@ steps:
       - '10'
       - '--set-env-vars'
       - 'STREAMLIT_SERVER_PORT=8080,STREAMLIT_SERVER_ADDRESS=0.0.0.0'
+      - '--timeout'
+      - '300'
 
 # Store images in Container Registry
 images:

@@ -34,13 +34,12 @@ logs/
 *.db
 *.sqlite
 
-# Test files
-test_*.py
-*_test.py
+# Test files (but keep test utilities)
+test_imports.py
+test_paths.py
 
-# Documentation
-*.md
-docs/
+# Documentation (but keep deployment guides)
+STREAMLIT_CLOUD_README.md
 
 # Temporary files
 tmp/
@@ -52,10 +51,8 @@ temp/
 .env.local
 .streamlit/
 
-# Docker files
-Dockerfile*
-docker-compose*
-.dockerignore
+# Docker files (but keep docker-compose for reference)
+docker-compose.yml
 
 # CI/CD files
 .github/
@@ -69,3 +66,12 @@ node_modules/
 build/
 dist/
 *.egg-info/
+
+# Keep important files for build
+!requirements.txt
+!app.py
+!new_data_assistant_project/
+!Dockerfile
+!cloudbuild.yaml
+!deploy.sh
+!GOOGLE_CLOUD_DEPLOYMENT.md

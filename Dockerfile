@@ -34,6 +34,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Install runtime system dependencies
 RUN apt-get update && apt-get install -y \
     sqlite3 \
+    curl \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
@@ -43,11 +44,11 @@ COPY --from=builder /opt/venv /opt/venv
 # Create app user for security
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
-# Set working directory
-WORKDIR /app
+# Set working directory to the project directory
+WORKDIR /app/new_data_assistant_project
 
 # Copy application code
-COPY . .
+COPY . /app/
 
 # Create necessary directories and set permissions
 RUN mkdir -p /app/new_data_assistant_project/src/database \
@@ -65,5 +66,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
 
-# Run the application
-CMD ["python", "app.py"]
+# Run the application using the main.py entry point
+CMD ["python", "main.py"]
