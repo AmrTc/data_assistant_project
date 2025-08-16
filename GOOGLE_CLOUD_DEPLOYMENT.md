@@ -63,6 +63,49 @@ curl http://localhost:8080
 
 ## ☁️ Google Cloud Deployment
 
+### 🚨 **WICHTIG: Build-Fehler vermeiden**
+
+Der häufigste Fehler ist:
+```
+Build konnte nicht ausgelöst werden: if 'build.service_account' is specified, 
+the build must either (a) specify 'build.logs_bucket', (b) use the 
+REGIONAL_USER_OWNED_BUCKET build.options.default_logs_bucket_behavior option, 
+or (c) use either CLOUD_LOGGING_ONLY / NONE logging options
+```
+
+**Lösung 1: Vereinfachte Cloud Build (empfohlen)**
+```bash
+# Verwende die vereinfachte cloudbuild-simple.yaml
+gcloud builds submit --config cloudbuild-simple.yaml .
+```
+
+**Lösung 2: Logs Bucket erstellen**
+```bash
+# Erstelle einen Logs Bucket
+gsutil mb gs://YOUR_PROJECT_ID-cloudbuild-logs
+
+# Verwende die vollständige cloudbuild.yaml
+gcloud builds submit --config cloudbuild.yaml .
+```
+
+**Lösung 3: Manuelles Deployment (einfachste)**
+```bash
+# Image bauen und pushen
+docker build -t gcr.io/YOUR_PROJECT_ID/data-assistant .
+docker push gcr.io/YOUR_PROJECT_ID/data-assistant
+
+# Zu Cloud Run deployen
+gcloud run deploy data-assistant \
+    --image gcr.io/YOUR_PROJECT_ID/data-assistant \
+    --platform managed \
+    --region europe-west1 \
+    --allow-unauthenticated \
+    --port 8080 \
+    --memory 2Gi \
+    --cpu 1 \
+    --max-instances 10
+```
+
 ### 1. **Automatisches Deployment (empfohlen)**
 ```bash
 # Code zu GitHub pushen
@@ -70,7 +113,7 @@ git push origin main
 
 # Cloud Build Trigger erstellen (in Google Cloud Console)
 # Oder manuell auslösen:
-gcloud builds submit --config cloudbuild.yaml .
+gcloud builds submit --config cloudbuild-simple.yaml .
 ```
 
 ### 2. **Manuelles Deployment**
@@ -149,6 +192,9 @@ gcloud builds log BUILD_ID
 
 # Lokal testen
 docker build -t test-image .
+
+# Vereinfachte Cloud Build verwenden
+gcloud builds submit --config cloudbuild-simple.yaml .
 ```
 
 ### 2. **Runtime-Fehler**
@@ -164,6 +210,28 @@ gcloud logging read "resource.type=cloud_run_revision"
 - Memory/CPU Limits erhöhen
 - Max Instances anpassen
 - Cold Start optimieren
+
+### 4. **Häufige Build-Fehler**
+
+**Fehler: "build.service_account" Problem**
+```bash
+# Lösung: Verwende cloudbuild-simple.yaml
+gcloud builds submit --config cloudbuild-simple.yaml .
+```
+
+**Fehler: "logs_bucket" Problem**
+```bash
+# Lösung: Erstelle Logs Bucket
+gsutil mb gs://YOUR_PROJECT_ID-cloudbuild-logs
+```
+
+**Fehler: "permission denied"**
+```bash
+# Lösung: Berechtigungen setzen
+gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
+    --member="serviceAccount:YOUR_PROJECT_NUMBER@cloudbuild.gserviceaccount.com" \
+    --role="roles/run.admin"
+```
 
 ## 💰 Kostenoptimierung
 
@@ -195,7 +263,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: google-github-actions/setup-gcloud@v0
-      - run: gcloud builds submit --config cloudbuild.yaml .
+      - run: gcloud builds submit --config cloudbuild-simple.yaml .
 ```
 
 ## ✅ Deployment-Checkliste
@@ -205,6 +273,7 @@ jobs:
 - [ ] Berechtigungen gesetzt
 - [ ] Docker Image lokal getestet
 - [ ] Code zu GitHub gepusht
+- [ ] **WICHTIG: cloudbuild-simple.yaml verwenden**
 - [ ] Cloud Build ausgelöst
 - [ ] Service läuft auf Cloud Run
 - [ ] HTTPS funktioniert
@@ -223,3 +292,19 @@ https://data-assistant-XXXXX-ew.a.run.app
 - Google Cloud Documentation
 - Cloud Run Troubleshooting Guide
 - Stack Overflow: google-cloud-run
+
+## 🚀 Schnellstart (empfohlen)
+
+```bash
+# 1. Projekt setzen
+gcloud config set project YOUR_PROJECT_ID
+
+# 2. APIs aktivieren
+gcloud services enable cloudbuild.googleapis.com run.googleapis.com containerregistry.googleapis.com
+
+# 3. Vereinfachte Cloud Build verwenden
+gcloud builds submit --config cloudbuild-simple.yaml .
+
+# 4. Service URL abrufen
+gcloud run services describe data-assistant --region=europe-west1 --format='value(status.url)'
+```
